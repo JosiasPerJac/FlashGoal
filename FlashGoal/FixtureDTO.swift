@@ -8,7 +8,8 @@
 import Foundation
 
 struct FixturesResponse: Codable {
-    let data: [Fixture]
+    let data: [Fixture]?
+    let message: String?
 }
 
 struct Fixture: Codable, Identifiable {
@@ -67,5 +68,21 @@ struct StatValue: Codable {
     
     enum CodingKeys: String, CodingKey {
         case value, name
+    }
+}
+
+extension Fixture {
+    var currentHomeGoals: Int? {
+        guard let scores = scores else { return nil }
+        return scores
+            .first { $0.description == "CURRENT" && $0.score?.participant == "home" }?
+            .score?.goals
+    }
+    
+    var currentAwayGoals: Int? {
+        guard let scores = scores else { return nil }
+        return scores
+            .first { $0.description == "CURRENT" && $0.score?.participant == "away" }?
+            .score?.goals
     }
 }
