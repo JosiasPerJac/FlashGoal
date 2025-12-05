@@ -10,17 +10,18 @@ import Foundation
 protocol FootballRepositoryProtocol {
     func fetchLeague(id: Int) async throws -> League
     func fetchCurrentSeasonId(leagueId: Int) async throws -> Int
+    func fetchFixtures(date: Date) async throws -> [Fixture]
 }
 
 final class FootballRepository: FootballRepositoryProtocol {
-    // ID for future testing purposes
     private let client: SportmonksClient
     
     init(client: SportmonksClient = .shared) {
         self.client = client
     }
     
-    // League info
+    // MARK: - Leagues & Seasons
+    
     func fetchLeague(id: Int) async throws -> League {
         let endpoint = "leagues/\(id)"
         let response: LeagueResponse = try await client.request(
@@ -30,7 +31,6 @@ final class FootballRepository: FootballRepositoryProtocol {
         return response.data
     }
     
-    // Helper to obtain specific season ID of the league
     func fetchCurrentSeasonId(leagueId: Int) async throws -> Int {
         let league = try await fetchLeague(id: leagueId)
         guard let seasonId = league.currentSeasonId else {
@@ -41,6 +41,8 @@ final class FootballRepository: FootballRepositoryProtocol {
         return seasonId
     }
     
+    // MARK: - Fixtures
+    
     func fetchFixtures(date: Date) async throws -> [Fixture] {
         
         let dateFormatter = DateFormatter()
@@ -49,7 +51,14 @@ final class FootballRepository: FootballRepositoryProtocol {
         
         let endpoint = "fixtures/date/\(dateString)"
         
-        let includes = ["participants", "scores", "venue"]
+        let includes = [
+            "participants",
+            "scores",
+            "venue",
+            "statistics.type",
+            "lineups.player",       
+            "lineups.details.type"
+        ]
         
         let response: FixturesResponse = try await client.request(
             endpoint: endpoint,
