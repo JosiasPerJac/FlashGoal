@@ -17,14 +17,10 @@ struct MatchDetailView: View {
                 
                 if let stats = fixture.statistics, !stats.isEmpty {
                     MatchStatsCard(fixture: fixture, stats: stats)
-                } else {
-                    ContentUnavailableView(
-                        "No Data",
-                        systemImage: "chart.bar.xaxis",
-                        description: Text("The stats will be available at the start of the match.")
-                    )
-                    .padding()
-                    .glassCardStyle()
+                }
+                
+                if let events = fixture.events, !events.isEmpty {
+                    MatchEventsCard(fixture: fixture)
                 }
                 
                 if let lineups = fixture.lineups, !lineups.isEmpty {

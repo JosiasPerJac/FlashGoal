@@ -11,49 +11,62 @@ struct MatchRowView: View {
     let fixture: Fixture
     
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .center, spacing: 0) {
             
-            TeamRowItem(
+            TeamColumn(
                 name: fixture.homeTeamName,
-                imagePath: fixture.participants?.first(where: { $0.meta?.location == "home" })?.imagePath,
-                alignment: .trailing
+                imagePath: fixture.participants?.first(where: { $0.meta?.location == "home" })?.imagePath
             )
-            .frame(maxWidth: .infinity, alignment: .trailing)
             
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 if let homeGoals = fixture.currentHomeGoals,
                    let awayGoals = fixture.currentAwayGoals {
                     
                     Text("\(homeGoals) - \(awayGoals)")
-                        .font(.system(size: 20, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 34, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Text(getShortStatus(fixture.resultInfo))
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .textCase(.uppercase)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(.white.opacity(0.1))
+                        .clipShape(Capsule())
                     
                 } else {
-                    
                     Text(formatTime(fixture.startingAt))
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.blue)
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
                     
                     Text(formatDate(fixture.startingAt))
                         .font(.caption2)
                         .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.6))
                         .textCase(.uppercase)
                 }
             }
-            .frame(width: 80)
+            .frame(width: 100)
             
-            TeamRowItem(
+            TeamColumn(
                 name: fixture.awayTeamName,
-                imagePath: fixture.participants?.first(where: { $0.meta?.location == "away" })?.imagePath,
-                alignment: .leading
+                imagePath: fixture.participants?.first(where: { $0.meta?.location == "away" })?.imagePath
             )
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 12)
-        .frame(height: 70)
         .glassCardStyle()
+    }
+    
+    func getShortStatus(_ status: String?) -> String {
+        guard let status = status?.lowercased() else { return "" }
+        if status.contains("ended") || status.contains("won") || status.contains("draw") {
+            return "FT"
+        }
+        if status.contains("live") { return "LIVE" }
+        if status.contains("postponed") { return "PP" }
+        return "vs"
     }
     
     // MARK: - Helpers for date formatting
@@ -78,39 +91,33 @@ struct MatchRowView: View {
     }
 }
 
-private struct TeamRowItem: View {
+struct TeamColumn: View {
     let name: String
     let imagePath: String?
-    let alignment: HorizontalAlignment
     
     var body: some View {
-        HStack(spacing: 10) {
-            if alignment == .trailing {
-                Text(name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .multilineTextAlignment(.trailing)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-            
+        VStack(spacing: 8) {
             AsyncImage(url: URL(string: imagePath ?? "")) { phase in
                 if let image = phase.image {
-                    image.resizable().scaledToFit()
+                    image
+                        .resizable()
+                        .scaledToFit()
                 } else {
-                    Circle().fill(.white.opacity(0.1))
+                    Circle()
+                        .fill(.white.opacity(0.1))
                 }
             }
-            .frame(width: 35, height: 35)
+            .frame(width: 42, height: 42)
             
-            if alignment == .leading {
-                Text(name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
+            Text(name)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(.white.opacity(0.9))
+                .multilineTextAlignment(.center)
+                .textCase(.uppercase)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity)
         }
+        .frame(maxWidth: .infinity) 
     }
 }

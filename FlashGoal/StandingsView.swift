@@ -42,16 +42,24 @@ struct StandingsView: View {
     @State private var viewModel = StandingsViewModel()
     @State private var selectedLeagueTab: Int = LeagueConstants.scottishPremiershipId
     
+    @State private var scottishLeague: League?
+    @State private var danishLeague: League?
+    private let repository = FootballRepository()
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 AppBackground()
                 
                 VStack(spacing: 0) {
-                    LeagueSwitcherView(selectedTab: $selectedLeagueTab)
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                        .padding(.bottom, 10)
+                    LeagueSwitcherView(
+                        selectedTab: $selectedLeagueTab,
+                        scottishLogo: scottishLeague?.imagePath,
+                        danishLogo: danishLeague?.imagePath
+                    )
+                    .padding(.horizontal)
+                    .padding(.top, 20)
+                    .padding(.bottom, 10)
                     
                     HStack(spacing: 0) {
                         Text("#").frame(width: 30, alignment: .center)
@@ -65,7 +73,7 @@ struct StandingsView: View {
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 28) 
+                    .padding(.horizontal, 28)
                     .padding(.bottom, 8)
                     
                     if viewModel.isLoading {
@@ -94,6 +102,15 @@ struct StandingsView: View {
             }
             .task {
                 await viewModel.loadStandings(leagueId: selectedLeagueTab)
+                
+                do {
+                    async let scot = repository.fetchLeague(id: LeagueConstants.scottishPremiershipId)
+                    async let danish = repository.fetchLeague(id: LeagueConstants.danishSuperligaId)
+                    self.scottishLeague = try await scot
+                    self.danishLeague = try await danish
+                } catch {
+                    print("Error loading league logos: \(error)")
+                }
             }
         }
     }

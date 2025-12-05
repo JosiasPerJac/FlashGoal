@@ -43,35 +43,36 @@ final class FootballRepository: FootballRepositoryProtocol {
     }
     
     // MARK: - Fixtures
-    func fetchFixtures(date: Date) async throws -> [Fixture] {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
-        
-        let endpoint = "fixtures/date/\(dateString)"
-        
-        let includes = [
-            "participants",
-            "scores",
-            "venue",
-            "statistics.type",
-            "lineups.player",
-            "lineups.details.type"
-        ]
-        
-        let response: FixturesResponse = try await client.request(
-            endpoint: endpoint,
-            includes: includes
-        )
-        
-        let allFixtures = response.data ?? []
-        let ourLeagues = Set(LeagueConstants.supportedLeagues)
-        
-        return allFixtures.filter { fixture in
-            ourLeagues.contains(fixture.leagueId)
+        func fetchFixtures(date: Date) async throws -> [Fixture] {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let dateString = dateFormatter.string(from: date)
+            
+            let endpoint = "fixtures/date/\(dateString)"
+            
+            let includes = [
+                "participants",
+                "scores",
+                "venue",
+                "statistics.type",
+                "lineups.player",
+                "lineups.details.type",
+                "events.type",
+                "events.player"
+            ]
+            
+            let response: FixturesResponse = try await client.request(
+                endpoint: endpoint,
+                includes: includes
+            )
+            
+            let allFixtures = response.data ?? []
+            let ourLeagues = Set(LeagueConstants.supportedLeagues)
+            
+            return allFixtures.filter { fixture in
+                ourLeagues.contains(fixture.leagueId)
+            }
         }
-    }
-    
     // MARK: - Standings
     func fetchStandings(seasonId: Int) async throws -> [StandingData] {
         let endpoint = "standings/seasons/\(seasonId)"

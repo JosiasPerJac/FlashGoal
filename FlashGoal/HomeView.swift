@@ -12,6 +12,10 @@ struct HomeView: View {
     @State private var selectedLeagueTab: Int = LeagueConstants.scottishPremiershipId
     @State private var showCalendarPicker: Bool = false
     
+    @State private var scottishLeague: League?
+    @State private var danishLeague: League?
+    private let repository = FootballRepository()
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -21,29 +25,21 @@ struct HomeView: View {
                     CalendarStripView(selectedDate: $viewModel.selectedDate)
                         .padding(.top)
                     
-                    LeagueSwitcherView(selectedTab: $selectedLeagueTab)
-                        .padding(.horizontal)
+                    LeagueSwitcherView(
+                        selectedTab: $selectedLeagueTab,
+                        scottishLogo: scottishLeague?.imagePath,
+                        danishLogo: danishLeague?.imagePath
+                    )
+                    .padding(.horizontal)
                     
                     ScrollView {
                         LazyVStack(spacing: 16) {
                             if viewModel.isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                                    .padding(.top, 50)
+                                ProgressView().tint(.white).padding(.top, 50)
                             } else if let error = viewModel.errorMessage {
-                                ContentUnavailableView(
-                                    "Error",
-                                    systemImage: "exclamationmark.triangle",
-                                    description: Text(error)
-                                )
-                                .padding(.top, 50)
+                                ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error)).padding(.top, 50)
                             } else if activeFixtures.isEmpty {
-                                ContentUnavailableView(
-                                    "No Game Today",
-                                    systemImage: "sportscourt",
-                                    description: Text("No games scheduled for this date in this league.")
-                                )
-                                .padding(.top, 50)
+                                ContentUnavailableView("No matches", systemImage: "sportscourt", description: Text("No games scheduled for this date.")).padding(.top, 50)
                             } else {
                                 ForEach(activeFixtures) { fixture in
                                     NavigationLink(destination: MatchDetailView(fixture: fixture)) {
@@ -56,18 +52,14 @@ struct HomeView: View {
                         .padding()
                         .safeAreaPadding(.bottom, 80)
                     }
-                    .refreshable {
-                        await viewModel.loadFixtures()
-                    }
+                    .refreshable { await viewModel.loadFixtures() }
                 }
             }
             .navigationTitle("FlashGoal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showCalendarPicker.toggle()
-                    } label: {
+                    Button { showCalendarPicker.toggle() } label: {
                         Image(systemName: "calendar")
                             .foregroundStyle(.white)
                             .font(.system(size: 16, weight: .bold))
@@ -79,25 +71,28 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showCalendarPicker) {
                 VStack {
-                    DatePicker(
-                        "Select Date",
-                        selection: $viewModel.selectedDate,
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.graphical)
-                    .padding()
-                    
-                    Button("Confirm") {
-                        showCalendarPicker = false
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .padding()
+                    DatePicker("Select Date", selection: $viewModel.selectedDate, displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .padding()
+                    Button("Confirm") { showCalendarPicker = false }
+                        .buttonStyle(.borderedProminent)
+                        .padding()
                 }
                 .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
             }
             .task(id: viewModel.selectedDate) {
                 await viewModel.loadFixtures()
+            }
+            .task {
+                do {
+                    async let scot = repository.fetchLeague(id: LeagueConstants.scottishPremiershipId)
+                    async let danish = repository.fetchLeague(id: LeagueConstants.danishSuperligaId)
+                    
+                    self.scottishLeague = try await scot
+                    self.danishLeague = try await danish
+                } catch {
+                    print("Error loading league logos: \(error)")
+                }
             }
         }
     }
@@ -116,12 +111,16 @@ struct HomeView: View {
 
 struct LeagueSwitcherView: View {
     @Binding var selectedTab: Int
+    var scottishLogo: String? = nil
+    var danishLogo: String? = nil
+    
     @Namespace private var animation
     
     var body: some View {
         HStack(spacing: 0) {
             LeagueTabButton(
                 title: "Premiership",
+                logoUrl: scottishLogo,
                 isSelected: selectedTab == LeagueConstants.scottishPremiershipId,
                 animation: animation,
                 action: { withAnimation(.snappy) { selectedTab = LeagueConstants.scottishPremiershipId } }
@@ -129,6 +128,7 @@ struct LeagueSwitcherView: View {
             
             LeagueTabButton(
                 title: "Superliga",
+                logoUrl: danishLogo,
                 isSelected: selectedTab == LeagueConstants.danishSuperligaId,
                 animation: animation,
                 action: { withAnimation(.snappy) { selectedTab = LeagueConstants.danishSuperligaId } }
@@ -145,24 +145,39 @@ struct LeagueSwitcherView: View {
 
 struct LeagueTabButton: View {
     let title: String
+    let logoUrl: String?
     let isSelected: Bool
     let animation: Namespace.ID
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(isSelected ? .white : .primary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background {
-                    if isSelected {
-                        Capsule()
-                            .fill(Color.blue.gradient)
-                            .matchedGeometryEffect(id: "LeagueTab", in: animation)
+            HStack(spacing: 8) {
+                if let url = logoUrl {
+                    AsyncImage(url: URL(string: url)) { phase in
+                        if let image = phase.image {
+                            image.resizable().scaledToFit()
+                        } else {
+                            Circle().fill(.white.opacity(0.2))
+                        }
                     }
+                    .frame(width: 20, height: 20)
+                    .shadow(radius: 2)
                 }
+                
+                Text(title)
+                    .font(.system(size: 14, weight: .bold))
+            }
+            .foregroundStyle(isSelected ? .white : .primary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(Color.blue.gradient)
+                        .matchedGeometryEffect(id: "LeagueTab", in: animation)
+                }
+            }
         }
     }
 }
