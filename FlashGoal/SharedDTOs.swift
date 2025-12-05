@@ -55,3 +55,7 @@ struct ScoreValue: Codable {
     let goals: Int?
     let participant: String?   
 }
+
+struct PlayerSearchResponse: Codable {
+    let data: [Player]
+}

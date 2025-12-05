@@ -11,7 +11,8 @@ struct MatchRowView: View {
     let fixture: Fixture
     
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
+            
             TeamRowItem(
                 name: fixture.homeTeamName,
                 imagePath: fixture.participants?.first(where: { $0.meta?.location == "home" })?.imagePath,
@@ -40,7 +41,7 @@ struct MatchRowView: View {
                         .textCase(.uppercase)
                 }
             }
-            .frame(width: 90)
+            .frame(width: 80)
             
             TeamRowItem(
                 name: fixture.awayTeamName,
@@ -51,11 +52,11 @@ struct MatchRowView: View {
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 12)
+        .frame(height: 70)
         .glassCardStyle()
     }
     
     // MARK: - Helpers for date formatting
-    
     private func formatTime(_ dateString: String?) -> String {
         guard let dateString = dateString else { return "--:--" }
         let formatter = ISO8601DateFormatter()
@@ -89,8 +90,8 @@ private struct TeamRowItem: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .multilineTextAlignment(.trailing)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.9)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
             
             AsyncImage(url: URL(string: imagePath ?? "")) { phase in
@@ -107,8 +108,8 @@ private struct TeamRowItem: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .multilineTextAlignment(.leading)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.9)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
         }
     }

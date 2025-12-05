@@ -11,6 +11,8 @@ protocol FootballRepositoryProtocol {
     func fetchLeague(id: Int) async throws -> League
     func fetchCurrentSeasonId(leagueId: Int) async throws -> Int
     func fetchFixtures(date: Date) async throws -> [Fixture]
+    func fetchStandings(seasonId: Int) async throws -> [StandingData]
+    func searchPlayers(query: String) async throws -> [Player]
 }
 
 final class FootballRepository: FootballRepositoryProtocol {
@@ -21,7 +23,6 @@ final class FootballRepository: FootballRepositoryProtocol {
     }
     
     // MARK: - Leagues & Seasons
-    
     func fetchLeague(id: Int) async throws -> League {
         let endpoint = "leagues/\(id)"
         let response: LeagueResponse = try await client.request(
@@ -42,9 +43,7 @@ final class FootballRepository: FootballRepositoryProtocol {
     }
     
     // MARK: - Fixtures
-    
     func fetchFixtures(date: Date) async throws -> [Fixture] {
-        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: date)
@@ -56,7 +55,7 @@ final class FootballRepository: FootballRepositoryProtocol {
             "scores",
             "venue",
             "statistics.type",
-            "lineups.player",       
+            "lineups.player",
             "lineups.details.type"
         ]
         
@@ -66,12 +65,50 @@ final class FootballRepository: FootballRepositoryProtocol {
         )
         
         let allFixtures = response.data ?? []
-        
         let ourLeagues = Set(LeagueConstants.supportedLeagues)
-        let filteredFixtures = allFixtures.filter { fixture in
+        
+        return allFixtures.filter { fixture in
             ourLeagues.contains(fixture.leagueId)
         }
-        
-        return filteredFixtures
     }
+    
+    // MARK: - Standings
+    func fetchStandings(seasonId: Int) async throws -> [StandingData] {
+        let endpoint = "standings/seasons/\(seasonId)"
+        
+        let includes = ["participant", "details.type"]
+        
+        let response: StandingsResponse = try await client.request(
+            endpoint: endpoint,
+            includes: includes
+        )
+        
+        return response.data
+    }
+    
+    // MARK: - Player Search (NEW)
+    func searchPlayers(query: String) async throws -> [Player] {
+        let endpoint = "players/search/\(query)"
+        
+        let response: PlayerSearchResponse = try await client.request(endpoint: endpoint)
+        return response.data
+    }
+    
+    // MARK: - Player Detail
+        func fetchPlayerDetail(playerId: Int) async throws -> PlayerDetail {
+            let endpoint = "players/\(playerId)"
+            
+            let includes = [
+                "nationality",
+                "position",
+                "statistics.details.type",
+                "teams.team" 
+            ]
+            
+            let response: PlayerDetailResponse = try await client.request(
+                endpoint: endpoint,
+                includes: includes
+            )
+            return response.data
+        }
 }
