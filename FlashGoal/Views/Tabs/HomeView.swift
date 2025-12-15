@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// The home screen displaying fixtures for selected leagues and dates.
 struct HomeView: View {
     @State private var viewModel = CalendarViewModel()
     @State private var selectedLeagueTab: Int = LeagueConstants.scottishPremiershipId

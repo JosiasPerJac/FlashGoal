@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A card view displaying the timeline of key events (Goals, Cards, Substitutions).
 struct MatchEventsCard: View {
     let fixture: Fixture
     
@@ -47,6 +48,7 @@ struct MatchEventsCard: View {
     }
 }
 
+/// A single row in the timeline. Events for the Home team align left; Away team align right.
 struct TimelineRow: View {
     let event: FixtureEvent
     let isHome: Bool
@@ -97,6 +99,7 @@ struct TimelineRow: View {
     }
 }
 
+/// A bubble displaying the minute of the event.
 struct TimeBubble: View {
     let time: String
     var body: some View {

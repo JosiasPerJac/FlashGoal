@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// The main entry point for navigation, providing a tab bar interface.
 struct MainTabView: View {
     init() {
         let appearance = UITabBarAppearance()

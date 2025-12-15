@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view displaying detailed information about a player, including career and stats.
 struct PlayerDetailView: View {
     let playerId: Int
     

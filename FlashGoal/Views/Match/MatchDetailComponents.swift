@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A vertical view displaying a team's logo and name.
 struct TeamVerticalView: View {
     let name: String
     let imagePath: String?
@@ -38,6 +39,7 @@ struct TeamVerticalView: View {
     }
 }
 
+/// A small team logo primarily used in lists or stats.
 struct TeamLogoSmall: View {
     let url: String?
     

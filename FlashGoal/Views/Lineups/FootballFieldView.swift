@@ -7,15 +7,20 @@
 
 import SwiftUI
 
+/// A graphical representation of a football pitch showing player formations.
+///
+/// This view takes a list of starting players and distributes them vertically on a pitch
+/// based on their position category (Goalkeeper, Defender, Midfielder, Attacker).
 struct FootballFieldView: View {
-    let lineups: [Lineup] // These are now strictly starters (11 players)
+    /// The list of players in the starting lineup.
+    let lineups: [Lineup]
     
     var body: some View {
         ZStack {
-            // 1. The Pitch
+            // 1. The Pitch Graphics
             FieldBackground()
             
-            // 2. The Formation (GK at Bottom, Attackers at Top)
+            // 2. The Formation Layer
             VStack(spacing: 0) {
                 
                 Spacer()
@@ -42,17 +47,19 @@ struct FootballFieldView: View {
             }
             .padding(.vertical, 20)
         }
-        .aspectRatio(3/4, contentMode: .fit) // Standard field aspect ratio
+        .aspectRatio(3/4, contentMode: .fit)
     }
     
-    // Helper to filter players
+    /// Filters and sorts players for a specific position row.
+    ///
+    /// - Parameter position: The position category name.
+    /// - Returns: A sorted list of players for that row.
     func getPlayers(for position: String) -> [Lineup] {
-        // Sort by ID is a rough way to keep consistent left-right order if metadata is missing
         return lineups.filter { $0.positionCategory == position }.sorted { $0.id < $1.id }
     }
 }
 
-// Horizontal Line of Players
+/// A horizontal container for a specific line of players (e.g., Defense line).
 struct PlayerLine: View {
     let players: [Lineup]
     
@@ -66,7 +73,7 @@ struct PlayerLine: View {
     }
 }
 
-// Individual Player Icon (Circle + Name)
+/// A visual icon for a single player on the field, showing their avatar and name.
 struct FieldPlayerIcon: View {
     let player: Player?
     
@@ -100,6 +107,7 @@ struct FieldPlayerIcon: View {
         }
     }
     
+    /// Formats the player's name to display only the last name or a short version.
     func formatName(_ name: String?) -> String {
         guard let name = name else { return "Unknown" }
         let parts = name.split(separator: " ")
@@ -108,7 +116,7 @@ struct FieldPlayerIcon: View {
     }
 }
 
-// Background Drawing
+/// The background drawing of the football pitch (grass, lines, boxes).
 struct FieldBackground: View {
     var body: some View {
         ZStack {

@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view displaying a preview of the lineups, showing players in key positions.
 struct PlayerStatsCard: View {
     let fixture: Fixture
     let lineups: [Lineup]

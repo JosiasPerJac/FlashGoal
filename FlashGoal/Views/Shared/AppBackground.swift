@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A reusable background view with animated gradients.
 struct AppBackground: View {
     @State private var animate: Bool = false
     
@@ -45,10 +46,11 @@ struct AppBackground: View {
     }
 }
 
+/// A view modifier that applies a glassmorphism effect to a view.
 struct GlassCardModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(.ultraThinMaterial) 
+            .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -59,6 +61,7 @@ struct GlassCardModifier: ViewModifier {
 }
 
 extension View {
+    /// Applies the standard glass card style to the view.
     func glassCardStyle() -> some View {
         modifier(GlassCardModifier())
     }

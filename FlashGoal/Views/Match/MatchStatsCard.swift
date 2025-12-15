@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+/// A card displaying a comparative list of match statistics (e.g., Shots, Possession).
+///
+/// This view normalizes the stats for both Home and Away teams and renders them
+/// as bar charts.
 struct MatchStatsCard: View {
     let fixture: Fixture
     let stats: [FixtureStatistic]
@@ -52,12 +56,17 @@ struct MatchStatsCard: View {
         .glassCardStyle()
     }
     
+    /// Organizes the flat list of statistics into pairs of (Home Value, Away Value).
+    ///
+    /// - Parameter rawStats: The raw list of statistics from the API.
+    /// - Returns: A dictionary where key is the stat name and value is the tuple of home/away scores.
     private func normalizeStats(_ rawStats: [FixtureStatistic]) -> [String: (home: Double, away: Double)] {
         var result: [String: (home: Double, away: Double)] = [:]
         
         let homeId = fixture.homeTeamId ?? -1
         let awayId = fixture.awayTeamId ?? -1
         
+        // Group by stat name
         let grouped = Dictionary(grouping: rawStats) { stat in
             return stat.type?.name ?? stat.type?.code ?? "Unknown Stat"
         }
@@ -65,6 +74,7 @@ struct MatchStatsCard: View {
         for (name, statsList) in grouped {
             var current = (home: 0.0, away: 0.0)
             
+            // Attempt to match by Team ID
             let homeStat = statsList.first { $0.teamId == homeId }
             let awayStat = statsList.first { $0.teamId == awayId }
             
@@ -72,7 +82,7 @@ struct MatchStatsCard: View {
                 current.home = homeStat?.data?.value ?? 0
                 current.away = awayStat?.data?.value ?? 0
             } else {
-                
+                // Fallback for when IDs might be missing/mismatched but order is consistent
                 if statsList.indices.contains(0) { current.home = statsList[0].data?.value ?? 0 }
                 if statsList.indices.contains(1) { current.away = statsList[1].data?.value ?? 0 }
             }
@@ -86,6 +96,7 @@ struct MatchStatsCard: View {
     }
 }
 
+/// A single row representing one statistic (e.g. "Shots") with a dual bar chart.
 private struct StatRow: View {
     let title: String
     let homeValue: Double

@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A prominent card view displaying the current score, status, and goal scorers.
 struct ScoreboardCard: View {
     let fixture: Fixture
     

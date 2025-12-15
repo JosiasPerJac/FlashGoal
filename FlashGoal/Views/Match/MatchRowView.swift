@@ -7,7 +7,13 @@
 
 import SwiftUI
 
+/// A list row component displaying a summary of a match fixture.
+///
+/// This view handles two main states:
+/// 1. **Upcoming:** Displays the start time and date.
+/// 2. **Live/Ended:** Displays the current score and status (e.g., "FT", "LIVE").
 struct MatchRowView: View {
+    /// The fixture data to display.
     let fixture: Fixture
     
     var body: some View {
@@ -59,6 +65,10 @@ struct MatchRowView: View {
         .glassCardStyle()
     }
     
+    /// Converts raw status strings into short abbreviations.
+    ///
+    /// - Parameter status: The raw status string (e.g., "Ended").
+    /// - Returns: An abbreviation like "FT", "LIVE", or "PP".
     func getShortStatus(_ status: String?) -> String {
         guard let status = status?.lowercased() else { return "" }
         if status.contains("ended") || status.contains("won") || status.contains("draw") {
@@ -91,6 +101,7 @@ struct MatchRowView: View {
     }
 }
 
+/// A subview for `MatchRowView` representing a single team's logo and name.
 struct TeamColumn: View {
     let name: String
     let imagePath: String?
@@ -118,6 +129,6 @@ struct TeamColumn: View {
                 .minimumScaleFactor(0.8)
                 .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity) 
+        .frame(maxWidth: .infinity)
     }
 }

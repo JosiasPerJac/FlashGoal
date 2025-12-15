@@ -7,19 +7,32 @@
 
 import SwiftUI
 
+/// Manages the state and business logic for the Player Search feature.
 @Observable
 class PlayersViewModel {
+    /// The collection of players found by the current search query.
     var players: [Player] = []
+    
+    /// Indicates if a search request is currently in flight.
     var isLoading = false
+    
+    /// Contains error details if the search operation fails.
     var errorMessage: String?
     
     private let repository: FootballRepositoryProtocol
     private var searchTask: Task<Void, Never>?
     
+    /// Initializes the ViewModel.
     init(repository: FootballRepositoryProtocol = FootballRepository()) {
         self.repository = repository
     }
     
+    /// Executes a search for players matching the query.
+    ///
+    /// This method implements a debounce mechanism (0.5s) to prevent excessive API calls
+    /// while the user is typing.
+    ///
+    /// - Parameter query: The text to search for (minimum 3 characters).
     @MainActor
     func search(query: String) {
         searchTask?.cancel()
@@ -30,7 +43,7 @@ class PlayersViewModel {
         }
         
         searchTask = Task {
-            try? await Task.sleep(nanoseconds: 500_000_000)
+            try? await Task.sleep(nanoseconds: 500_000_000) // Debounce 0.5s
             if Task.isCancelled { return }
             
             isLoading = true
@@ -48,6 +61,7 @@ class PlayersViewModel {
     }
 }
 
+/// The main view for the Players tab, allowing users to search and navigate to player details.
 struct PlayersView: View {
     @State private var viewModel = PlayersViewModel()
     @State private var searchText = ""
@@ -58,6 +72,7 @@ struct PlayersView: View {
                 AppBackground()
                 
                 VStack(spacing: 0) {
+                    // Search Bar
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(.secondary)
@@ -81,6 +96,7 @@ struct PlayersView: View {
                     .clipShape(Capsule())
                     .padding()
                     
+                    // State Handling
                     if viewModel.isLoading {
                         ProgressView().tint(.white)
                             .padding(.top, 50)
@@ -96,6 +112,7 @@ struct PlayersView: View {
                         }
                         Spacer()
                     } else {
+                        // Results List
                         List(viewModel.players, id: \.id) { player in
                             ZStack {
                                 NavigationLink(destination: PlayerDetailView(playerId: player.id)) {
@@ -116,6 +133,7 @@ struct PlayersView: View {
         }
     }
     
+    /// A custom row view for a player in the search results.
     struct PlayerSearchRow: View {
         let player: Player
         

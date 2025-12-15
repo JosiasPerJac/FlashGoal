@@ -8,10 +8,16 @@
 import SwiftUI
 import Observation
 
+/// Manages the state for the League Standings screen.
 @Observable
 class StandingsViewModel {
+    /// The ordered list of standing rows.
     var standings: [StandingData] = []
+    
+    /// Indicates if data is currently loading.
     var isLoading = false
+    
+    /// Stores error descriptions if fetching fails.
     var errorMessage: String?
     
     private let repository: FootballRepositoryProtocol
@@ -20,6 +26,13 @@ class StandingsViewModel {
         self.repository = repository
     }
     
+    /// Fetches the standings for the specified league.
+    ///
+    /// This process involves two steps:
+    /// 1. Fetching the league details to get the `currentSeasonId`.
+    /// 2. Fetching the standings for that specific season.
+    ///
+    /// - Parameter leagueId: The ID of the league to load.
     @MainActor
     func loadStandings(leagueId: Int) async {
         isLoading = true
@@ -38,6 +51,7 @@ class StandingsViewModel {
     }
 }
 
+/// A view displaying the league table (rank, team, points, stats).
 struct StandingsView: View {
     @State private var viewModel = StandingsViewModel()
     @State private var selectedLeagueTab: Int = LeagueConstants.scottishPremiershipId
@@ -52,6 +66,7 @@ struct StandingsView: View {
                 AppBackground()
                 
                 VStack(spacing: 0) {
+                    // League Switcher
                     LeagueSwitcherView(
                         selectedTab: $selectedLeagueTab,
                         scottishLogo: scottishLeague?.imagePath,
@@ -61,6 +76,7 @@ struct StandingsView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 10)
                     
+                    // Table Header
                     HStack(spacing: 0) {
                         Text("#").frame(width: 30, alignment: .center)
                         Text("Team").frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 4)
@@ -76,6 +92,7 @@ struct StandingsView: View {
                     .padding(.horizontal, 28)
                     .padding(.bottom, 8)
                     
+                    // Table Body
                     if viewModel.isLoading {
                         ProgressView().tint(.white)
                             .frame(maxHeight: .infinity)
@@ -103,6 +120,7 @@ struct StandingsView: View {
             .task {
                 await viewModel.loadStandings(leagueId: selectedLeagueTab)
                 
+                // Fetch logos for the switcher
                 do {
                     async let scot = repository.fetchLeague(id: LeagueConstants.scottishPremiershipId)
                     async let danish = repository.fetchLeague(id: LeagueConstants.danishSuperligaId)
@@ -116,6 +134,7 @@ struct StandingsView: View {
     }
 }
 
+/// A row view representing a single team's standing.
 struct StandingRow: View {
     let row: StandingData
     
@@ -164,6 +183,7 @@ struct StandingRow: View {
         .glassCardStyle()
     }
     
+    /// Extracts a specific stat value from the details array by Type ID.
     func getDetail(typeId: Int) -> Int {
         return row.details?.first(where: { $0.typeId == typeId })?.value ?? 0
     }

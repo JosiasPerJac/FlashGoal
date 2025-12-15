@@ -7,11 +7,15 @@
 
 import SwiftUI
 
+/// Determines how the lineup should be visualized.
 enum LineupDisplayMode {
+    /// A textual list view.
     case list
+    /// A graphical field view.
     case field
 }
 
+/// A view displaying the starting lineups and substitutes.
 struct LineupsView: View {
     let fixture: Fixture
     let lineups: [Lineup]
