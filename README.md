@@ -15,7 +15,7 @@ The app focuses on responsiveness and complex data presentation, utilizing moder
 
 # 📱 App Demo
 
-https://github.com/user-attachments/assets/eb47601d-4bc3-49b6-8601-7a54641e1058
+https://github.com/user-attachments/assets/fa53ada3-459e-4100-addb-196ae2969820
 
 # 📸 Screenshots
 
